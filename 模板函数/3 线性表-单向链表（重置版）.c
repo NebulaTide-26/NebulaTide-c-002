@@ -586,7 +586,7 @@ static int dlink_basic_fillnode(node *q) {
 
 // 依照某成员值对链表节点排序
 intdlink* dlink_sort(intdlink* list) {
-	// 待完善！！！！！！s
+	// 待完善............
 	
 	
 	return list;
