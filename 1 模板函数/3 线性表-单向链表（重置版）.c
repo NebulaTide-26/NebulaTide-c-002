@@ -1,3 +1,12 @@
+/*手动DIY目录：
+DIY_node				
+DIY_fillnode_0(k)		
+DIY_fillnode(k)			
+DIY_printnode(k)		（若需调用dlink_printlist时）
+DIY_search(k, x)		（若需调用dlink_search时）
+DIY_copy				（若需调用dlink_copy时）
+*/
+
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
