@@ -38,7 +38,7 @@ DIY_copy				（若需调用dlink_copy时）
 // 将t1节点的所有数据复制给t1节点
 
 #define PLACE0(p) ((intplace){.pr = (p)})
-#define PLACE1(n) ((intplace){.n = (n)})
+#define PLACE1(idx) ((intplace){.n = (idx)})
 // 自动填写复合字面量
 
 /*
