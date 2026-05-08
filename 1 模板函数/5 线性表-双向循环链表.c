@@ -1,14 +1,20 @@
+﻿/*
+手动DIY目录：
+DIY_node				
+DIY_fillnode_0(k)		
+DIY_fillnode(k)			
+DIY_printnode(k)		（若需调用dclink_printlist时）
+DIY_search(k, x)		（若需调用dclink_search时）
+DIY_copy				（若需调用dclink_copy时）
+
+说明：
+所有涉及intplace参数的函数，调用要写PLACE0(x) or PLACE1(x)，代表作为指针 or 序号来解析，并在sign处对应填写0 or 1
+*/
+
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
-#include <stdlib.h>// qsort
-#include <time.h>
-//#include <windows.h>//（windows特有库）sleep函数等（含max、min）
-//#include <conio.h>//（windows特有库）getch函数等
-#include <errno.h>// 检查strtol转换溢出问题→"errno"
-
-#define eps 1e-8
-#define array_len(x) (sizeof(x)/sizeof(x[0]))//计算数组长度
+#include <stdlib.h>
 
 #define DIY_node			int num;
 // 用于自定义节点的数据结构
@@ -26,17 +32,17 @@
 // 以k作为节点指针；要能直接填写在if()的()里（注意：仅用于简单的节点数据。对于多数据节点，可能要手动修改dclink_search函数！！！！！！）
 
 #define DIY_copy			t2->num = t1->num;
-// 将t1节点的所有数据复制给t1节点
+// 将t1节点的所有数据复制给t2节点
 
 #define PLACE0(p) ((intplace){.pr = (p)})
-#define PLACE1(n) ((intplace){.n = (n)})
+#define PLACE1(idx) ((intplace){.n = (idx)})
 // 自动填写复合字面量
 
 /*
-数据结构-线性表-双向链表 函数实现
+数据结构-线性表-双向循环链表 函数实现
 基本信息类型：intdclink
 节点类型：node
-若同时建立多个顺序表，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词
+若同时建立多个顺序表，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
 （即：一种基本信息结构体、多种node、多套函数）
 */
 
@@ -77,10 +83,12 @@ int dclink_checkplace(intdclink *list, intplace x, int sign);
 node* dclink_search(intdclink* list, int x);
 int dclink_getplace_pr(intdclink *list, node *p);
 node* dclink_getplace_n(intdclink *list, int n);
+
 // 3.节点信息录入&输出
 void dclink_fillnode_0(intdclink *list, intplace x, int sign);
 int dclink_fillnode(intdclink *list, intplace x, int sign);
 int dclink_printlist(intdclink *list);
+
 // 4.其他（供其他函数调用的基础功能函数等）
 void dclink_set_error_output(int enable);
 static void dclink_basic_fillnode_0(node *q);
@@ -100,17 +108,17 @@ int main() {
 
 // 创建链表
 // 返回值：链表信息结构体指针（失败可视化错误处理并返回NULL）
-intdclink* dclink_intlist(int n, int sign) {// sign=1录入数据，sign=0不录入数据
+intdclink* dclink_intlist(int n, int sign_fill) {// sign_fill=1录入数据，sign_fill=0不录入数据
 	if(n<0) {
 		if (dclink_error_output) printf("The number of nodes should >= 0.\n");
 		return NULL;
-	} else if(sign!=1 && sign!=0) {
+	} else if(sign_fill!=1 && sign_fill!=0) {
 		if (dclink_error_output) printf("The sign to set data should be 0 or 1.\n");
 		return NULL;
 	}
 	intdclink *list;
 	if(!(list=(intdclink*)malloc(sizeof(intdclink)))) {// 创建链表信息并判断是否成功
-		if (dclink_error_output) printf("There is not enough space for the new dlinklist.\n");
+		if (dclink_error_output) printf("There is not enough space for the new dclinklist.\n");
 		return NULL;
 	}
 	list->head=NULL;
@@ -125,17 +133,17 @@ intdclink* dclink_intlist(int n, int sign) {// sign=1录入数据，sign=0不录
 	
 	for(int i=1; i<=n; i++) {// 循环创建n个节点（并全部写入0）
 		if(!(q = (node*)malloc(sizeof(node)))) {// 创建节点并判断是否成功
-			if (dclink_error_output) printf("There is not enough space for the new dlinklist.\n");
+			if (dclink_error_output) printf("There is not enough space for the new dclinklist.\n");
 			dclink_deletelist(list);// 摧毁1~i-1节点
 			return NULL;
 		}
-		switch(sign) {
+		switch(sign_fill) {
 			case 0:
 				dclink_basic_fillnode_0(q);
 				break;
 			case 1:
 				if(dclink_basic_fillnode(q)<=0) {// 数据不足or输入的数据类型错误
-					if (dclink_error_output) printf("Failed to input data when creating the dlinklist.\n");
+					if (dclink_error_output) printf("Failed to input data when creating the dclinklist.\n");
 					dclink_deletelist(list);// 摧毁1~i-1节点
 					free(q);
 					return NULL;
@@ -144,14 +152,17 @@ intdclink* dclink_intlist(int n, int sign) {// sign=1录入数据，sign=0不录
 		}
 		if(list->head==NULL) {// 首个节点
 			list->head=q;
-			q->link1=NULL;
+			list->tail=q;
+			q->link1=q;
+			q->link2=q;
 		}
 		else {
 			q->link1 = list->tail;
+			q->link2 = list->head;
 			list->tail->link2 = q;// 设置第i-1节点的link2
+			list->head->link1 = q;
+			list->tail = q;// tail移动到当前（第i）节点
 		}
-		list->tail = q;// tail移动到当前（第i）节点
-		list->tail->link2=NULL;// 始终保持新结点link2为0
 	}
 	list->size = n;
 	return list;
@@ -160,7 +171,7 @@ intdclink* dclink_intlist(int n, int sign) {// sign=1录入数据，sign=0不录
 // 向链表头前添加1个空节点
 node* dclink_addnode_head(intdclink *list) {
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist.\n");
 		return NULL;
 	}
 	node *q;
@@ -169,16 +180,18 @@ node* dclink_addnode_head(intdclink *list) {
 		return NULL;
 	}
 	dclink_basic_fillnode_0(q);
-	q->link1 = NULL;
 	list->size++;
 	
 	if(list->tail==NULL) {//如果是空链表
 		list->head = q;
 		list->tail = q;
-		q->link2 = NULL;
+		q->link1 = q;
+		q->link2 = q;
 	} else {
+		q->link1 = list->tail;
 		q->link2 = list->head;
 		list->head->link1 = q;
+		list->tail->link2 = q;
 		list->head = q;
 	}
 	return q;
@@ -187,7 +200,7 @@ node* dclink_addnode_head(intdclink *list) {
 // 向链表尾后添加1个空节点
 node* dclink_addnode_tail(intdclink *list) {
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist.\n");
 		return NULL;
 	}
 	node *q;
@@ -196,16 +209,18 @@ node* dclink_addnode_tail(intdclink *list) {
 		return NULL;
 	}
 	dclink_basic_fillnode_0(q);
-	q->link2 = NULL;
 	list->size++;
 	
 	if(list->tail==NULL) {//如果是空链表
 		list->head = q;
 		list->tail = q;
-		q->link1 = NULL;
+		q->link1 = q;
+		q->link2 = q;
 	} else {
 		q->link1 = list->tail;
+		q->link2 = list->head;
 		list->tail->link2 = q;
+		list->head->link1 = q;
 		list->tail = q;
 	}
 	return q;
@@ -214,7 +229,7 @@ node* dclink_addnode_tail(intdclink *list) {
 // 向intplace=x的节点的前or后添加1个空节点
 node* dclink_addnode(intdclink *list, int target, intplace x, int sign) {// target：-1=前，1=后
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist.\n");
 		return NULL;
 	}
 	if(target!=-1 && target!=1) {
@@ -235,7 +250,7 @@ node* dclink_addnode(intdclink *list, int target, intplace x, int sign) {// targ
 			if(x.pr==list->tail) return dclink_addnode_tail(list);
 			break;
 	}
-	
+	// 此时：链表size一定>=2，且新节点不插在头尾
 	node *q;
 	if(!(q = (node*)malloc(sizeof(node)))) {// 创建节点并判断是否成功
 		if (dclink_error_output) printf("There is not enough space for the new node.\n");
@@ -264,7 +279,7 @@ node* dclink_addnode(intdclink *list, int target, intplace x, int sign) {// targ
 // 返回值：1（失败返回-1）
 int dclink_deletenode(intdclink *list, int target, intplace x, int sign) {// target：-1=前，0=x，1=后
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist.\n");
 		return -1;
 	}
 	if(target!=-1 && target!=0 && target!=1) {
@@ -289,12 +304,14 @@ int dclink_deletenode(intdclink *list, int target, intplace x, int sign) {// tar
 			if(x.pr==list->head) {// 删除头结点
 				node *t = list->head;
 				list->head = list->head->link2;
-				list->head->link1 = NULL;
+				list->head->link1 = list->tail;
+				list->tail->link2 = list->head;
 				free(t);
 			} else if(x.pr==list->tail) {// 删除尾结点
 				node *t = list->tail;
 				list->tail = list->tail->link1;
-				list->tail->link2 = NULL;
+				list->tail->link2 = list->head;
+				list->head->link1 = list->tail;
 				free(t);
 			}
 			else {
@@ -305,39 +322,9 @@ int dclink_deletenode(intdclink *list, int target, intplace x, int sign) {// tar
 			list->size--;
 			break;
 		case -1:// 删除前一节点
-			if(x.pr==list->head) {
-				if (dclink_error_output) printf("Cannot delete the preceding node.(already at boundary)\n");
-				return -1;
-			}
-			if(x.pr->link1==list->head) {// 删除头结点
-				list->head = x.pr;
-				free(x.pr->link1);
-				x.pr->link1 = NULL;
-			} else {
-				node *t = x.pr->link1;
-				x.pr->link1 = t->link1;
-				t->link1->link2 = x.pr;
-				free(t);
-			}
-			list->size--;
-			break;
+			return dclink_deletenode(list, 0, PLACE0(x.pr->link1), 0);
 		case 1:// 删除后一节点
-			if(x.pr==list->tail) {
-				if (dclink_error_output) printf("Cannot delete the following node.(already at boundary)\n");
-				return -1;
-			}
-			if(x.pr->link2==list->tail) {// 删除尾结点
-				list->tail = x.pr;
-				free(x.pr->link2);
-				x.pr->link2 = NULL;
-			} else {
-				node *t = x.pr->link2;
-				x.pr->link2 = t->link2;
-				t->link2->link1 = x.pr;
-				free(t);
-			}
-			list->size--;
-			break;
+			return dclink_deletenode(list, 0, PLACE0(x.pr->link2), 0);
 	}
 	return 1;
 }
@@ -346,10 +333,18 @@ int dclink_deletenode(intdclink *list, int target, intplace x, int sign) {// tar
 // 返回值：1（失败返回-1）
 int dclink_deletelist(intdclink *list) {
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist.\n");
 		return -1;
 	}
-	for(node *t=list->head, *p; t!=NULL;) {
+	if(list->head==NULL) {
+		free(list);
+		return 1;
+	}
+	node *t=list->head, *p, *head_save=list->head;
+	p = t->link2;
+	free(t);
+	t = p;
+	for(; t!=head_save; ) {// tips：用某些AI进行代码检查可能会对此报错，但实际运行没有问题。为方便dclink_intlist对此函数的调用，暂时不能依赖list->size进行删除
 		p = t->link2;
 		free(t);
 		t = p;
@@ -358,17 +353,20 @@ int dclink_deletelist(intdclink *list) {
 	return 1;
 }
 
-// 将list2追加到list1后（需保证node类型相同；将删除list2，如需要可提前调用dclink_copy(list2)）
-// 返回值：list1的链表信息结构体指针
+// 将list2追加到list1后（需保证node类型相同；函数将删除list2，如需要可提前调用dclink_copy(list2)）
+// 返回值：list1的链表信息结构体指针（失败返回NULL）
 intdclink* dclink_append(intdclink* list1, intdclink* list2) {
 	if(list1==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist 1 now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist 1 now.\n");
 		return NULL;
 	} else if(list2==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist 2 now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist 2 now.\n");
+		return NULL;
+	} else if(list2==list1) {
+		if (dclink_error_output) printf("Can't append a list to itself.\n");
 		return NULL;
 	}
-	// 处理空表问题
+	// 单独处理空表问题
 	if(list1->size==0 && list2->size==0) {
 		free(list2);
 		return list1;
@@ -382,8 +380,11 @@ intdclink* dclink_append(intdclink* list1, intdclink* list2) {
 		free(list2);
 		return list1;
 	}
+	
 	list1->tail->link2 = list2->head;
 	list2->head->link1 = list1->tail;
+	list2->tail->link2 = list1->head;
+	list1->head->link1 = list2->tail;
 	list1->tail = list2->tail;
 	list1->size += list2->size;
 	free(list2);
@@ -393,14 +394,15 @@ intdclink* dclink_append(intdclink* list1, intdclink* list2) {
 // 复制list1
 intdclink* dclink_copy(intdclink* list1) {
 	if(list1==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist now.\n");
 		return NULL;
 	}
 	intdclink *list2 = dclink_intlist(list1->size, 0);
 	if(list1->size==0) {
 		return list2;
 	}
-	for(node *t1=list1->head, *t2=list2->head; t1!=NULL; t1=t1->link2, t2=t2->link2) {
+	node *t1=list1->head, *t2=list2->head;
+	for(int i=0; i<list1->size; i++, t1=t1->link2, t2=t2->link2) {
 		DIY_copy
 	}
 	return list2;
@@ -411,7 +413,7 @@ intdclink* dclink_copy(intdclink* list1) {
 
 // 可视化检查intplace=x的位置信息是否合法
 // 返回值：1（位置非法返回-1）
-// 特别注意：为避免每次调用checkplace都遍历链表，此处不检查地址是否一定在链表中！！！
+// 特别注意：为避免每次调用checkplace都遍历链表，此处不检查地址是否一定在链表中！！！		如有需要，可单独检验dclink_getplace_pr(list, x.pr)!=-1
 // 返回1时确保：链表存在且非空，intplace在链表里（地址除外）
 int dclink_checkplace(intdclink *list, intplace x, int sign) {
 	if(sign!=0 && sign!=1) {
@@ -419,11 +421,11 @@ int dclink_checkplace(intdclink *list, intplace x, int sign) {
 		return -1;
 	}
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist now.\n");
 		return -1;
 	}
 	if(list->size==0) {
-		if (dclink_error_output) printf("The target dlinklist is empty.\n");
+		if (dclink_error_output) printf("The target dclinklist is empty.\n");
 		return -1;
 	}
 	
@@ -456,15 +458,17 @@ int dclink_checkplace(intdclink *list, intplace x, int sign) {
 
 // 查找数据（从head开始，查找第一个特定成员值为x的节点）
 // 返回值：找到返回相应节点指针（找不到返回NULL）
+// tips：大多数场景下，需要将该函数放入main中，并用变量形式填写DIY_search(t, x)；本函数仅作为格式模板
 node* dclink_search(intdclink* list, int x) {
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist now.\n");
 		return NULL;
 	}
 	if(list->size==0) {
 		return NULL;
 	}
-	for(node *t=list->head; t!=NULL; t = t->link2) {
+	node *t=list->head;
+	for(int i=0; i < list->size; i++, t = t->link2) {
 		if(DIY_search(t, x)) {// 根据所查找成员&节点结构DIY
 			return t;
 		}
@@ -472,30 +476,28 @@ node* dclink_search(intdclink* list, int x) {
 	return NULL;
 }
 
-// 转换：节点序号->节点地址
+// 转换：节点地址->节点序号
 // 返回值：节点序号（失败返回-1）
 int dclink_getplace_pr(intdclink *list, node *p) {
 	if(dclink_checkplace(list, PLACE0(p), 0)==-1) {
 		return -1;
 	}
 	int count=1;
-	for(node *t=list->head; t!=NULL; t=t->link2) {
+	for(node *t=list->head; count<=list->size; t=t->link2, count++) {
 		if(t==p) {
 			return count;
 		}
-		count++;
 	}
 	if (dclink_error_output) printf("Invalid position.(the position isn't in the list)\n");
 	return -1;
 }
 
-// 转换：节点地址->节点序号
+// 转换：节点序号->节点地址
 // 返回值：节点地址（失败返回NULL）
 node* dclink_getplace_n(intdclink *list, int n) {
 	if(dclink_checkplace(list, PLACE1(n), 1)==-1) {
 		return NULL;
 	}
-	
 	node *t=list->head;
 	n--;
 	while(n--) {
@@ -515,11 +517,11 @@ void dclink_fillnode_0(intdclink *list, intplace x, int sign) {
 	if(sign) {// 统一翻译成x.pr
 		x.pr = dclink_getplace_n(list, x.n);
 	}
-	DIY_fillnode_0(x.pr);// 具体根据节点实际状态填写DIY宏
+	dclink_basic_fillnode_0(x.pr);
 	return;
 }
 
-// 向地址为q的节点录入数据
+// 向intplace=x的节点录入数据
 // 返回值：本节点成功录入数据个数（读取到文件尾时返回-1）
 int dclink_fillnode(intdclink *list, intplace x, int sign) {
 	if(dclink_checkplace(list, x, sign)==-1) {// 判断位置是否合法
@@ -528,24 +530,24 @@ int dclink_fillnode(intdclink *list, intplace x, int sign) {
 	if(sign) {// 统一翻译成x.pr
 		x.pr = dclink_getplace_n(list, x.n);
 	}
-	return DIY_fillnode(x.pr);// 具体根据节点实际状态填写DIY宏
+	return dclink_basic_fillnode(x.pr);
 }
 
 // 打印全部链表数据
 // 返回值：1（空链表等错误返回-1）
 int dclink_printlist(intdclink *list) {
 	if(list==NULL) {
-		if (dclink_error_output) printf("Can't find the target dlinklist now.\n");
+		if (dclink_error_output) printf("Can't find the target dclinklist now.\n");
 		return -1;
 	}
 	node *t=list->head;
 	int count=0;
 	if(t==NULL) {
-		if (dclink_error_output) printf("The dlinklist is empty.\n");
+		if (dclink_error_output) printf("The dclinklist is empty.\n");
 		return -1;
 	}
-	printf("Here are contents of the dlinklist now:\n");
-	while(t!=NULL) {
+	printf("Here are contents of the dclinklist now:\n");
+	while(count<list->size) {
 		printf("%d: ", ++count);
 		DIY_printnode(t);// 具体根据节点实际状态填写DIY宏
 		t = t->link2;
