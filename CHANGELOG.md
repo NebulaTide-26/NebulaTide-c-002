@@ -5,7 +5,7 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，版本遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 （至少理论上是这样的......）
 
-### [x.x.x] - （模板）
+### [x.x.x] -（模板）
 
 #### 新增
 #### 修改
