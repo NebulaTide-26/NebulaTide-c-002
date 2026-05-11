@@ -17,9 +17,8 @@ int main()
 	while(scanf(" %lf %lf", &a[i], &b[i])!=EOF)
 	{
 		i++;
-//		printf("%d\n", i);
+//		printf("i=%d\n", i);
 	}
-	
 	double zi1=0, zi2=0, mu=0, sgpa=0;
 	
 	for(int j=1; j<=i-1; j++)
