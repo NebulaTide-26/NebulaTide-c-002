@@ -9,3 +9,4 @@
 "工具-编译器选项-显示-<ID 27071 translation missing>"（以6.3版本为例）  
 取消勾选，以正常显示中文注释  
 2. 版本信息参见markdown文件CHANGELOG
+3. 有任何建议or疑问欢迎访问 https://github.com/starsky-26/starsky-c-002 进行评论/提pr！

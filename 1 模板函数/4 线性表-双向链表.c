@@ -6,7 +6,7 @@ DIY_printnode(k)		（若需调用dlink_printlist时）
 DIY_search(k, x)		（若需调用dlink_search时）
 
 说明：
-所有涉及intplacecan参数的函数，调用要写PLACE0(x) or PLACE1(x)，代表指针 or 序号
+所有涉及intplace参数的函数，调用要写PLACE0(x) or PLACE1(x)，代表作为指针 or 序号来解析，并在sign处对应填写0 or 1
 */
 
 /* 错误说明：
