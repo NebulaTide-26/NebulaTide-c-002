@@ -33,7 +33,7 @@ DIY_search(k, x)		（若需调用tree_search时）
 // 以k作为节点指针；不带;的printf()语句
 
 #define DIY_search(k, x)	k->num==x
-// 以k作为节点指针；要能直接填写在if()的()里（注意：仅用于简单的节点数据。对于多数据节点，可能要手动修改dlink_search函数！！！！！！）
+// 以k作为节点指针；要能直接填写在if()的()里（注意：仅用于简单的节点数据。对于多数据节点，可能要手动修改tree_search函数！！！！！！）
 
 
 
@@ -71,7 +71,7 @@ typedef struct {
 	node_level *head;
 	node_level *tail;
 	int count;
-} intlevel;// 层序遍历总目录结构体
+} intlevel;// 层序遍历总目录结构体（采用链表结构）
 
 
 
@@ -94,7 +94,7 @@ inttree* tree_copy(inttree* tree1);								// 复制tree1
 int tree_checkplace(inttree *tree, node *p);					// 可视化检查节点指针p是否合法
 node* tree_traverse_pre(inttree *tree, node *p);				// 先根遍历（根据当前接收的节点，输出下一个节点地址）
 node* tree_traverse_post(inttree *tree, node *p);				// 后根遍历（根据当前接收的节点，输出下一个节点地址）
-node* tree_traverse_post_1(inttree *tree, node *p);				// （后跟遍历辅助函数）定位到以p为根节点的子树的左下角
+node* tree_traverse_post_start(inttree *tree, node *p);				// （后跟遍历辅助函数）定位到以p为根节点的子树的左下角
 node* tree_traverse_level(inttree *tree, node *p);				// 层序遍历（根据当前接收的节点，输出下一个节点地址）
 int tree_traverse_clean(inttree *tree);							// （层序遍历辅助函数）强制清除tree的层序遍历资源（若tree=NULL，全部清除）
 node* tree_search(inttree *tree, int x);						// 查找数据
@@ -109,30 +109,34 @@ int tree_fillnode(inttree *tree, node *p);						// 向节点p录入数据
 
 // 4.其他（供其他函数调用的basic函数等）
 void tree_set_error_output(int enable);							// 控制是否可视化打印错误信息
-static void tree_basic_fillnode_0(node *p);						// （basic）向节点p录入数据
+static void tree_basic_fillnode_0(node *p);						// （basic）向节点p写入0
 static int tree_basic_fillnode(node *p);						// （basic）向节点p录入数据
 static node* tree_basic_copynode(node *dest, node *src);		// （basic）将节点src的数据复制给节点dest
 static node* tree_basic_copy(node *p, node *parent);			// （basic）递归复制节点p及其所有子树
 static void tree_basic_deletenode(node *p);						// （basic）删除节点p的全部子树、brother（不调整任何tree的size）
 static void tree_basic_traverse_level_deletenode(node_level *t);// （basic）删除层序遍历总目录中地址位t的项（及其内部引出的traverse数组）
 
+
+
 int main() {
 	
-    
     
     
     return 0;
 }
 
+
+
 // 自定义函数
 
 // 1.树结构控制
-/* 创建树（仅有根节点，data设为0）
+/* 创建树（仅有根节点，其data设为0）
    返回值：树信息结构体指针（失败返回NULL）
 */
 inttree* tree_inttree() {
+	// 创建树的信息并判断是否成功
 	inttree *tree = (inttree*)malloc(sizeof(inttree));
-	if(!tree) {// 创建树的信息并判断是否成功
+	if(!tree) {
 		if (tree_error_output) printf("[Memory exceeded] There is not enough space for the new tree.\n");
 		return NULL;
 	}
@@ -153,6 +157,8 @@ inttree* tree_inttree() {
 
 /* 为空树tree加入一个空根节点
    返回值：新节点地址（失败返回NULL）
+   
+   注：由于下一函数tree_addnode必须基于某个现有节点，该函数是对其的补充
 */
 node* tree_addnode_root(inttree *tree) {
 	if(tree==NULL) {
@@ -160,12 +166,12 @@ node* tree_addnode_root(inttree *tree) {
 		return NULL;
 	}
 	if(tree->root!=NULL) {
-		if(tree_error_output) printf("[Illegal operation] The tree already has a root.\n");
+		if(tree_error_output) printf("[Illegal operation] The target tree already has a root.\n");
 		return NULL;
 	}
 	node *t = (node*)malloc(sizeof(node));
 	if(!t) {
-		if(tree_error_output) printf("[Invalid function argument] There is not enough space for the new node.\n");
+		if(tree_error_output) printf("[Memory exceeded] There is not enough space for the new node.\n");
 		return NULL;
 	}
 	t->brother = NULL;
@@ -181,8 +187,9 @@ node* tree_addnode_root(inttree *tree) {
    返回值：新节点地址（失败返回NULL）
    
    函数行为约定：添加brother默认加在紧邻p处，添加child默认加在其所有child之前
+   target：-1=child，1=brother
 */
-node* tree_addnode(inttree *tree, int target, node *p) {// target：-1=child，1=brother
+node* tree_addnode(inttree *tree, int target, node *p) {
 	
 	if(tree==NULL) {
 		if (tree_error_output) printf("[Invalid function argument] The target tree pointer is NULL.\n");
@@ -235,7 +242,7 @@ node* tree_addnode(inttree *tree, int target, node *p) {// target：-1=child，1
    
    target：-1=删除p的所有子树，0=删除p及其所有子树（若有）同时保留brother，1=删除单个右brother及其所有子树
 */
-int tree_deletenode(inttree *tree, int target, node *p) {// target：-1、0、1
+int tree_deletenode(inttree *tree, int target, node *p) {
 	if(tree_checkplace(tree, p)==-1) {
 		return -1;
 	}
@@ -251,7 +258,7 @@ int tree_deletenode(inttree *tree, int target, node *p) {// target：-1、0、1
 				return -1;
 			}
 			node *p0 = p;// 记录子树根节点地址
-			p = tree_traverse_post_1(tree, p);// 定位到子树的左下角
+			p = tree_traverse_post_start(tree, p);// 定位到子树的左下角
 			node *t = p;// 配合free函数
 			while(p!=p0) {
 				t = p;
@@ -264,7 +271,7 @@ int tree_deletenode(inttree *tree, int target, node *p) {// target：-1、0、1
 		}
 		case 0:{
 			node *p0 = p;// 记录子树根节点地址
-			p = tree_traverse_post_1(tree, p);// 定位到子树的左下角
+			p = tree_traverse_post_start(tree, p);// 定位到子树的左下角
 			node *t = p;// 配合free函数
 			while(p!=p0) {
 				t = p;
@@ -274,7 +281,7 @@ int tree_deletenode(inttree *tree, int target, node *p) {// target：-1、0、1
 			}
 			// 处理对p本身的删除
 			tree->size--;
-			if(p==tree->root) {
+			if(p==tree->root) {// 删成空树
 				tree->root = NULL;
 				free(p);
 			} else if(p->parent->child==p) {// p是最大brother
@@ -389,7 +396,7 @@ node* tree_traverse_pre(inttree *tree, node *p) {
 		return NULL;
 	}
 	if(p->child!=NULL) return p->child;
-	// 从p往上找第一个有brother的祖上节点
+	// 从p往上找第一个有brother的祖上节点（含p本身）
 	while(p!=NULL) {
 		if(p->brother!=NULL) return p->brother;
 		p = p->parent;
@@ -401,7 +408,7 @@ node* tree_traverse_pre(inttree *tree, node *p) {
 /* 后根遍历（根据当前接收的节点，输出下一个节点地址）
    返回值：下一个节点地址（错误 or 遍历结束返回NULL）
    
-   注意：由于是最后遍历到根节点，完整遍历时需要先手动（调用tree_traverse_post_1）定位到最左下方的节点处
+   注意：由于不是从根节点开始遍历，完整遍历时需要先手动（调用tree_traverse_post_start）定位到最左下方的节点处
 */
 node* tree_traverse_post(inttree *tree, node *p) {
 	if(tree_checkplace(tree, p)==-1) {
@@ -412,13 +419,13 @@ node* tree_traverse_post(inttree *tree, node *p) {
 		return p->parent;
 	}
 	// 定位到p的brother子树的最左下角
-	return tree_traverse_post_1(tree, p->brother);
+	return tree_traverse_post_start(tree, p->brother);
 }
 
-/* （后跟遍历辅助函数）定位到以p为根节点的子树的左下角
-   返回值：左下角节点地址（错误 or 遍历结束返回NULL）
+/* （后跟遍历辅助函数）定位到tree中以p为根节点的子树的左下角
+   返回值：左下角节点地址（错误返回NULL）
 */
-node* tree_traverse_post_1(inttree *tree, node *p) {
+node* tree_traverse_post_start(inttree *tree, node *p) {
 	if(tree_checkplace(tree, p)==-1) {
 		return NULL;
 	}
@@ -453,10 +460,10 @@ node* tree_traverse_level(inttree *tree, node *p) {
 	} else {
 		t = (node_level*)malloc(sizeof(node_level));
 		if(!t) {
-			if (tree_error_output) printf("[Memory exceeded] There are not enouth space to do the level-order traverse.\n");
+			if (tree_error_output) printf("[Memory exceeded] There are not enough space to do the level-order traverse.\n");
 			return NULL;
 		}
-		// （实际）进行前序遍历
+		// 构建层序遍历序列
 		t->root = tree->root;
 		t->traverse = (node**)malloc(sizeof(node*)*tree->size);// 层序遍历数组（只进不出的队列）
 		if(!t->traverse) {
@@ -524,7 +531,7 @@ int tree_traverse_clean(inttree *tree) {
 /* 查找数据
    返回值：目标节点指针（找不到返回NULL）
    
-   tips：大多数场景下，需要将该函数放入main中，并用变量形式填写DIY_search(t, x)；本函数仅作为格式模板
+   tips：本函数作为格式模板，仅设定一个搜索参量x，实际可手动添加
 */
 node* tree_search(inttree *tree, int x) {
 	if(tree==NULL) {
