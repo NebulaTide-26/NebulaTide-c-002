@@ -1,3 +1,10 @@
+/* 数据结构-树-普通树（三重链表结构） 函数实现
+基本信息类型：inttree
+节点类型：node
+若同时建立多个树，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
+（即：一种基本信息结构体、多种node、多套函数）
+*/
+
 /* 手动DIY目录：
 DIY_data
 DIY_fillnode_0(k)		
@@ -20,29 +27,20 @@ DIY_search(k, x)		（若需调用tree_search时）
 #include <string.h>
 #include <stdlib.h>
 
-#define DIY_data			int num
+#define DIY_data				int num
 // 用于自定义节点的数据结构
 
-#define DIY_fillnode_0(k)	k->num = 0
-// 以k作为节点指针，用于填写成员赋值语句
+#define DIY_fillnode_0(k)		k->num = 0
+// 以k作为节点指针；用于填写成员赋值语句
 
-#define DIY_fillnode(k)		scanf("%d", &k->num)
-// 以k作为节点指针，不带;的scanf()语句
+#define DIY_fillnode(k)			scanf("%d", &k->num)
+// 以k作为节点指针；不带“;”的scanf()语句
 
-//#define DIY_printnode(k)	??????（暂时用不到）
-// 以k作为节点指针；不带;的printf()语句
+//#define DIY_printnode(k)		??????（暂时用不到）
+// 以k作为节点指针；不带“;”的printf()语句
 
-#define DIY_search(k, x)	k->num==x
+#define DIY_search(k, x)		k->num==x
 // 以k作为节点指针；要能直接填写在if()的()里（注意：仅用于简单的节点数据。对于多数据节点，可能要手动修改tree_search函数！！！！！！）
-
-
-
-/* 数据结构-树-普通树（三重链表结构） 函数实现
-基本信息类型：inttree
-节点类型：node
-若同时建立多个树，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
-（即：一种基本信息结构体、多种node、多套函数）
-*/
 
 
 
@@ -56,29 +54,31 @@ typedef struct Node {
 
 // 基本信息结构体
 typedef struct {
-	node *root;												// 根节点
-	int size;												// 树节点个数
+	node *root;						// 根节点
+	int size;						// 树节点个数
 } inttree;
 
+// 层序遍历结构体
 typedef struct Node_level{
-	node *root;												// 根节点地址
-	node **traverse;										// 存储层序遍历顺序的数组（队列）
+	node *root;						// 根节点地址
+	node **traverse;				// 存储层序遍历顺序的数组（队列）
 	struct Node_level *link1;
 	struct Node_level *link2;
-} node_level;// 层序遍历结构体
+} node_level;
 
+// 层序遍历总目录结构体（采用链表结构）
 typedef struct {
 	node_level *head;
 	node_level *tail;
 	int count;
-} intlevel;// 层序遍历总目录结构体（采用链表结构）
+} intlevel;
 
-
-
+// 全局变量level：层序遍历总目录
 static intlevel _level = {NULL, NULL, 0};
-#define level (&_level)											// 全局变量level：层序遍历总目录
+#define level (&_level)
 
-static int tree_error_output = 1; 								// 全局变量tree_error_output：控制是否打印错误信息（默认打印）
+// 全局变量tree_error_output：控制是否打印错误信息（默认打印）
+static int tree_error_output = 1;
 
 
 

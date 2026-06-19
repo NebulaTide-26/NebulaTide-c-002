@@ -12,15 +12,15 @@ int main()
 	while(scanf("%lld", &at)!=EOF)
 	{
 		it = 64;
-	while(it--)
-	{
-		printf("%lld", (at>> (it) ) &1 );
-		
-		if (it%4 == 0 && it != 0){
-		printf(" ");
+		while(it--)
+		{
+			printf("%lld", ((at >> (it) ) & 1ll));
+			
+			if (it % 4 == 0 && it != 0){
+			printf(" ");
+			}
 		}
-	}
-	printf("\n");
+		printf("\n");
 	}
 
 return 0;

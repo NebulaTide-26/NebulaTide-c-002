@@ -1,3 +1,10 @@
+/* 数据结构-线性表-双向链表 函数实现
+基本信息类型：intdlink
+节点类型：node
+若同时建立多个链表，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
+（即：一种基本信息结构体、多种node、多套函数）
+*/
+
 /* 手动DIY目录：
 DIY_data				
 DIY_fillnode_0(k)		
@@ -24,35 +31,24 @@ DIY_search(k, x)		（若需调用dlink_search时）
 #include <string.h>
 #include <stdlib.h>
 
-#define DIY_data			int num
+#define DIY_data				int num
 // 用于自定义节点的数据结构
 
-#define DIY_fillnode_0(k)	k->num = 0
+#define DIY_fillnode_0(k)		k->num = 0
 // 以k作为节点指针；用于填写成员赋值语句
 
-#define DIY_fillnode(k)		scanf("%d", &k->num)
+#define DIY_fillnode(k)			scanf("%d", &k->num)
 // 以k作为节点指针；不带;的scanf()语句
 
-#define DIY_printnode(k)	printf("num=%d\n", k->num)
+#define DIY_printnode(k)		printf("num=%d\n", k->num)
 // 以k作为节点指针；不带;的printf()语句
 
-#define DIY_search(k, x)	k->num==x
+#define DIY_search(k, x)		k->num==x
 // 以k作为节点指针；要能直接填写在if()的()里（注意：仅用于简单的节点数据。对于多数据节点，可能要手动修改dlink_search函数！！！！！！）
-
-
 
 #define PLACE0(p) ((intplace){.pr = (p)})
 #define PLACE1(idx) ((intplace){.n = (idx)})
 // 自动填写复合字面量
-
-
-
-/* 数据结构-线性表-双向链表 函数实现
-基本信息类型：intdlink
-节点类型：node
-若同时建立多个链表，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
-（即：一种基本信息结构体、多种node、多套函数）
-*/
 
 
 
@@ -78,9 +74,8 @@ typedef union {
 	int n;
 } intplace;
 
-
-
-static int dlink_error_output = 1;  // 全局变量dlink_error_output：控制是否打印错误信息（默认打印）
+// 全局变量dlink_error_output：控制是否打印错误信息（默认打印）
+static int dlink_error_output = 1;
 
 
 
