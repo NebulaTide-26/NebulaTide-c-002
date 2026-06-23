@@ -1,7 +1,7 @@
 /* 数据结构-树-普通树（三重链表结构） 函数实现
 基本信息类型：inttree
 节点类型：node
-若同时建立多个树，需建立多个node变量类型 和 多个基本信息变量，并将所有函数的node分别换成对应词（并设定平行的不同函数名称）
+若同时建立多种树，需建立多种node变量类型 和 多个基本信息变量（并设定平行的不同的函数名称）
 （即：一种基本信息结构体、多种node、多套函数）
 */
 
@@ -82,7 +82,7 @@ static int tree_error_output = 1;
 
 
 
-// 1.树结构控制
+// 1.树的结构控制
 inttree* tree_inttree();										// 创建树（仅有根节点，data设为0）
 node* tree_addnode_root(inttree *tree);							// 为空树tree加入一个空根节点
 node* tree_addnode(inttree *tree, int target, node *p);			// 为节点p添加一个空child or brother节点
@@ -90,7 +90,7 @@ int tree_deletenode(inttree *tree, int target, node *p);		// 节点删除函数
 int tree_deletetree(inttree *tree);								// 删除全部节点，删除树信息
 inttree* tree_copy(inttree* tree1);								// 复制tree1
 
-// 2.节点位置、树相关信息获取
+// 2.节点、树相关信息获取
 int tree_checkplace(inttree *tree, node *p);					// 可视化检查节点指针p是否合法
 node* tree_traverse_pre(inttree *tree, node *p);				// 先根遍历（根据当前接收的节点，输出下一个节点地址）
 node* tree_traverse_post(inttree *tree, node *p);				// 后根遍历（根据当前接收的节点，输出下一个节点地址）
@@ -101,7 +101,7 @@ node* tree_search(inttree *tree, int x);						// 查找数据
 int tree_countdeep_node(inttree *tree, node *p);				// 计算节点p的深度
 int tree_countdeep(inttree *tree);								// 计算整个tree的深度
 
-// 3.节点信息录入&输出
+// 3.树的数据控制
 void tree_fillnode_0(inttree *tree, node *p);					// 向节点p写入0
 int tree_fillnode(inttree *tree, node *p);						// 向节点p录入数据
 
@@ -129,7 +129,7 @@ int main() {
 
 // 自定义函数
 
-// 1.树结构控制
+// 1.树的结构控制
 /* 创建树（仅有根节点，其data设为0）
    返回值：树信息结构体指针（失败返回NULL）
 */
@@ -364,13 +364,13 @@ inttree* tree_copy(inttree* tree1) {
 
 
 
-// 2.节点位置、树相关信息获取
+// 2.节点、树相关信息获取
 /* 可视化检查节点指针p是否合法
    返回值：1（位置非法返回-1）
    
    函数行为约定：
-   仅进行简单O(1)级别检查，不检查地址是否一定在树中（若需检查，可手动回溯parent链与tree->root对比）
-   返回1时确保：树存在且size≥1，指针非NULL
+   1.仅进行简单O(1)级别检查，不检查地址是否一定在树中（若需检查，可手动回溯parent链与tree->root对比）
+   2.返回1时确保：树存在且size≥1，指针非NULL
 */
 int tree_checkplace(inttree *tree, node *p) {
 	if(tree==NULL) {
@@ -408,7 +408,7 @@ node* tree_traverse_pre(inttree *tree, node *p) {
 /* 后根遍历（根据当前接收的节点，输出下一个节点地址）
    返回值：下一个节点地址（错误 or 遍历结束返回NULL）
    
-   注意：由于不是从根节点开始遍历，完整遍历时需要先手动（调用tree_traverse_post_start）定位到最左下方的节点处
+   注：由于不是从根节点开始遍历，完整遍历时需要先手动（调用tree_traverse_post_start）定位到最左下方的节点处
 */
 node* tree_traverse_post(inttree *tree, node *p) {
 	if(tree_checkplace(tree, p)==-1) {
@@ -587,7 +587,7 @@ int tree_countdeep(inttree *tree) {
 
 
 
-// 3.节点信息录入&输出
+// 3.树的数据控制
 /* 向节点p写入0
 */
 void tree_fillnode_0(inttree *tree, node *p) {
@@ -655,7 +655,7 @@ static int tree_basic_fillnode(node *p) {
    返回值：dest节点地址
    用途：配合tree_copy函数，取代DIY_copy宏
    
-   注意：为浅拷贝，若data区存在指针，可能会导致double-free，调用时小心
+   注：为浅拷贝，若data区存在指针，可能会导致double-free，调用时小心
 */
 static node* tree_basic_copynode(node *dest, node *src) {
 	node *parent = dest->parent;
@@ -672,7 +672,7 @@ static node* tree_basic_copynode(node *dest, node *src) {
    返回值：复制出来的节点p的对应节点（失败返回NULL）
    用途：配合tree_copy函数
    
-   注意：若节点p为NULL，返回值也为NULL，请注意与malloc失败的区分！
+   注：若节点p为NULL，返回值也为NULL，请注意与malloc失败的区分！
 */
 static node* tree_basic_copy(node *p, node *parent) {// 复制信息源的节点p地址，新树中对应节点的->parent地址
 	if(p==NULL) return NULL;

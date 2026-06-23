@@ -76,7 +76,7 @@ if((x & mask) != 0)
 	(year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 
 解决dev c++编译运行中文乱码：
-	以GBK/UTF-8编码读取中文：-finput-charset=GBK/UTF-8
+	以GBK/UTF-8编码读取中文：-finput-charset=GBK/UTF-8// 选GBK
 	以GBK/UTF-8编码输出中文：-fexec-charset=GBK/UTF-8
 
 swap函数实现举例（以int为例）：
