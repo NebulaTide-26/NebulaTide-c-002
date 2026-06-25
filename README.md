@@ -13,4 +13,4 @@
 勾选，并填写
 "-fexec-charset=GBK"（去掉引号）
 3. 版本信息参见markdown文件CHANGELOG
-4. 有任何建议or疑问欢迎访问 https://github.com/starsky-26/starsky-c-002 提出修改建议！
+4. 有任何建议or疑问欢迎访问 https://github.com/starsky-26/starsky-c-002 或 wangshaoyang2602@163.com 提出修改建议
