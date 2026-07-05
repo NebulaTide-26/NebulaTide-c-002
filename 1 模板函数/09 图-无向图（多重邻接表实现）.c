@@ -965,7 +965,9 @@ udge_node** udgraph_MST_Prim(intudgraph *graph) {
 /* 求最小生成树（Kruskal算法）
    返回值：被选入树中的边指针的数组，依次按weight、v1顶点序号、v2顶点序号升序排列
    
-   注：更适合稀疏图
+   注：
+   1.更适合稀疏图
+   2.复杂度O(elog2e)
    
    原理：
    从graph中选择一条当前未选择过的、且边上的权值最小的边加入tree。若加入tree后使得tree未产生回路，则本次选择有效；如使得tree产生回路，则本次选择无效，
